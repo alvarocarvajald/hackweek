@@ -1,0 +1,4 @@
+BOOTPROTO='static'
+IPADDR='10.0.2.2/15'
+STARTMODE='auto'
+OVS_BRIDGE='yes'
