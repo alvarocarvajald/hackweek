@@ -1,0 +1,5 @@
+FROM openqa
+
+RUN zypper in -y ruby ruby2.1-rubygem-sass
+
+ENTRYPOINT ["/root/run_openqa.sh"]
