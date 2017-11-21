@@ -48,7 +48,7 @@ start_openqa_workers() {
 start_openvswitch() {
 	mkdir -p /etc/openvswitch;
 	mkdir -p /var/run/openvswitch;
-	ovsdb-tool create;
+	test -f /etc/openvswitch/conf.db || ovsdb-tool create;
 	ovsdb-server /etc/openvswitch/conf.db -vconsole:emer -vsyslog:err -vfile:info --remote=punix:/var/run/openvswitch/db.sock --private-key=db:Open_vSwitch,SSL,private_key --certificate=db:Open_vSwitch,SSL,certificate --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert --no-chdir --log-file=/var/log/openvswitch/ovsdb-server.log --pidfile=/var/run/openvswitch/ovsdb-server.pid --detach;
 	ovs-vswitchd unix:/var/run/openvswitch/db.sock -vconsole:emer -vsyslog:err -vfile:info --mlockall --no-chdir --log-file=/var/log/openvswitch/ovs-vswitchd.log --pidfile=/var/run/openvswitch/ovs-vswitchd.pid --detach
 	ovs-vsctl set Open_vSwitch . other_config:dpdk-init=true;
@@ -66,11 +66,11 @@ tunctl_config() {
 }
 
 setup_bridge() {
-	ovs-vsctl add-br br0;
+	ovs-vsctl br-exists br0 || ovs-vsctl add-br br0;
 	cp /root/ifcfg-br0 /etc/sysconfig/network/;
 	for ((i=0; i<$WORKERS; i++)); do
 		echo "OVS_BRIDGE_PORT_DEVICE_1='tap$i'" >> /etc/sysconfig/network/ifcfg-br0;
-		ovs-vsctl add-port br0 tap$i tag=999;
+		(ovs-vsctl list-ports br0 | grep -w tap$i) || ovs-vsctl add-port br0 tap$i tag=999;
 	done;
 	chown root /etc/sysconfig/network/ifcfg-br0;
 	chmod 600 /etc/sysconfig/network/ifcfg-br0;
