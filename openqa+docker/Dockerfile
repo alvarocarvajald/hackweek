@@ -9,7 +9,8 @@ RUN zypper ar -f obs://devel:openQA/openSUSE_Leap_42.2 openQA && \
                  glibc-locale-32bit perl-App-cpanminus bridge-utils libcap-progs tunctl \
                  openQA-worker openQA-client os-autoinst openvswitch os-autoinst-openvswitch \
                  qemu qemu-tools qemu-block-curl qemu-block-rbd qemu-ipxe qemu-x86 \
-                 qemu-vgabios qemu-sgabios qemu-seabios SuSEfirewall2 syslogd
+                 qemu-vgabios qemu-sgabios qemu-seabios SuSEfirewall2 syslogd && \
+    zypper clean
 
 # Install needles and tests
 RUN mkdir -p /var/lib/openqa/share/tests && \
@@ -23,7 +24,8 @@ RUN mkdir -p /var/lib/openqa/share/tests && \
     cd /var/lib/openqa/share/tests && \
     ln -s opensuse sle && \
     ln -s opensuse sle-12-SP2 && \
-    ln -s opensuse sle-12-SP3
+    ln -s opensuse sle-12-SP3 && \
+    zypper clean
 
 # Add config and startup files. Read comments on run_openqa.sh about how to start
 # openQA outside of docker

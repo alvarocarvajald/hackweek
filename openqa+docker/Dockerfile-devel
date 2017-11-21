@@ -1,6 +1,6 @@
 FROM openqa
 
-RUN zypper in -y ruby ruby2.1-rubygem-sass
+RUN zypper in -y ruby ruby2.1-rubygem-sass && zypper clean
 
 EXPOSE 80
 
