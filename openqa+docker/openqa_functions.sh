@@ -1,9 +1,9 @@
 #!/bin/bash -ex
 
-OPENQA="/var/lib/openqa"
-OPENQA_BASEDIR="${OPENQA}"
-OPENQA_CONFIG="/etc/openqa"
-WORKERS=${WORKERS-1}
+export OPENQA_BASEDIR="/var/lib"
+export OPENQA="$OPENQA_BASEDIR/openqa"
+export OPENQA_CONFIG="/etc/openqa"
+export WORKERS=${WORKERS-1}
 
 # Methods whose names start with "start_" were created specially for docker containers and they
 # serve as systemd startup equivalents. When configuring openQA on a server without docker,
@@ -33,15 +33,15 @@ start_dbus() {
 
 start_openqa() {
         TYPE=${1-production};
-	start_daemon -u geekotest "$OPENQA_BASEDIR/script/openqa-scheduler" & sleep 1;
-	start_daemon -u geekotest "$OPENQA_BASEDIR/script/openqa-websockets" & sleep 1;
-	start_daemon -u geekotest "$OPENQA_BASEDIR/script/openqa" gru -m production run & sleep 1;
-	start_daemon -u geekotest "$OPENQA_BASEDIR/script/openqa" prefork -m production --proxy & sleep 1;
+	start_daemon -u geekotest "$OPENQA/script/openqa-scheduler" & sleep 1;
+	start_daemon -u geekotest "$OPENQA/script/openqa-websockets" & sleep 1;
+	start_daemon -u geekotest "$OPENQA/script/openqa" gru -m production run & sleep 1;
+	start_daemon -u geekotest "$OPENQA/script/openqa" prefork -m production --proxy & sleep 1;
 }
 
 start_openqa_workers() {
 	for ((i=1; i<=$WORKERS; i++)); do
-		su - _openqa-worker -c "$OPENQA_BASEDIR/script/worker --instance $i --verbose & sleep 1";
+		su - _openqa-worker -c "$OPENQA/script/worker --instance $i --verbose & sleep 1";
 	done;
 }
 

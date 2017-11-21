@@ -37,7 +37,7 @@ EXPOSE 80
 RUN chmod +x /root/run_openqa.sh && \
     mv /etc/apache2/vhosts.d/openqa.conf.template /etc/apache2/vhosts.d/openqa.conf && \
     a2enmod headers && a2enmod proxy && a2enmod proxy_http && a2enmod proxy_wstunnel && \
-    sed -i -e '/httpsonly/s/.*/httpsonly = 0/' /etc/openqa/openqa.ini && \
+    sed -i -e '/httpsonly/s/.*/httpsonly = 0/' -e '/# method/amethod = Fake' /etc/openqa/openqa.ini && \
     /usr/share/openqa/script/initdb --user geekotest --init_database && \
     echo "[localhost]" >> /etc/openqa/client.conf && \
     /usr/share/openqa/script/create_admin admin 2>/dev/null | \

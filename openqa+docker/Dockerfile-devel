@@ -3,6 +3,5 @@ FROM openqa
 RUN zypper in -y ruby ruby2.1-rubygem-sass
 
 EXPOSE 80
-EXPOSE 443
 
 ENTRYPOINT ["/root/run_openqa.sh"]
