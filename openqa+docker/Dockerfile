@@ -9,11 +9,13 @@ RUN zypper ar -f obs://devel:openQA/openSUSE_Leap_42.2 openQA && \
                  glibc-locale-32bit perl-App-cpanminus bridge-utils libcap-progs tunctl \
                  openQA-worker openQA-client os-autoinst openvswitch os-autoinst-openvswitch \
                  qemu qemu-tools qemu-block-curl qemu-block-rbd qemu-ipxe qemu-x86 \
-                 qemu-vgabios qemu-sgabios qemu-seabios SuSEfirewall2 syslogd && \
+                 qemu-vgabios qemu-sgabios qemu-seabios SuSEfirewall2 syslogd \
+                 postgresql-server && \
     zypper clean
 
 # Install needles and tests
 RUN mkdir -p /var/lib/openqa/share/tests && \
+    mkdir -p /var/lib/pgsql/data/ && \
     cd /var/lib/openqa/share/tests && \
     git clone git://github.com/os-autoinst/os-autoinst-distri-opensuse.git opensuse && \
     cd /var/lib/openqa/share/tests/opensuse/products/opensuse && \
@@ -37,14 +39,10 @@ EXPOSE 80
 
 # Check needed build arguments and configure apache and openQA
 RUN chmod +x /root/run_openqa.sh && \
+    chown postgres /var/lib/pgsql/data/ && \
     mv /etc/apache2/vhosts.d/openqa.conf.template /etc/apache2/vhosts.d/openqa.conf && \
     a2enmod headers && a2enmod proxy && a2enmod proxy_http && a2enmod proxy_wstunnel && \
     sed -i -e '/httpsonly/s/.*/httpsonly = 0/' -e '/# method/amethod = Fake' /etc/openqa/openqa.ini && \
-    /usr/share/openqa/script/initdb --user geekotest --init_database && \
-    echo "[localhost]" >> /etc/openqa/client.conf && \
-    /usr/share/openqa/script/create_admin admin 2>/dev/null | \
-    sed -n -e '/^Key:/s/^Key:/key =/p' -e '/^Secret:/s/^Secret:/secret =/p' >> /etc/openqa/client.conf && \
-    echo >> /etc/openqa/client.conf && \
     setcap CAP_NET_ADMIN=ep /usr/bin/qemu-system-x86_64 && \
     cp /etc/openqa/workers.ini /root/ && \
     sed -ri -e 's/^FW_ROUTE=.*/FW_ROUTE="yes"/' -e 's/^FW_MASQUERADE=.*/FW_MASQUERADE="yes"/' \

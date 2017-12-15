@@ -9,10 +9,6 @@ syslogd
 # Start dbus daemon
 start_dbus
 
-# Add hostname to openQA's client.conf if it's not there already
-grep $(hostname) /etc/openqa/client.conf >/dev/null 2>&1 || \
-tail -4 /etc/openqa/client.conf | sed 's/localhost/'$(hostname)'/' >> /etc/openqa/client.conf
-
 # Finish workers configuration. Check -e WORKERS
 setup_workers_config
 
@@ -20,6 +16,16 @@ setup_workers_config
 start_openvswitch
 tunctl_config
 setup_bridge
+
+# Start DB
+start_postgres
+
+# Init DB
+init_db
+
+# Add hostname to openQA's client.conf if it's not there already
+grep $(hostname) /etc/openqa/client.conf >/dev/null 2>&1 || \
+tail -4 /etc/openqa/client.conf | sed 's/localhost/'$(hostname)'/' >> /etc/openqa/client.conf
 
 # Start Apache
 apache2ctl start

@@ -85,3 +85,19 @@ start_os-autoinst-ovs() {
 	/usr/lib/os-autoinst/os-autoinst-openvswitch;
 }
 
+start_postgres() {
+	su - postgres -c "/usr/lib/postgresql-init start"
+}
+
+init_db() {
+	if [ ! -f /etc/openqa/db-initialized ]; then
+		su - postgres -c "createuser geekotest && createdb -O geekotest openqa";
+		/usr/share/openqa/script/initdb --user geekotest --init_database;
+		echo "[localhost]" >> /etc/openqa/client.conf;
+		su - geekotest -c "/usr/share/openqa/script/create_admin admin" 2>/dev/null | \
+		sed -n -e '/^Key:/s/^Key:/key =/p' -e '/^Secret:/s/^Secret:/secret =/p' >> /etc/openqa/client.conf && \
+		echo >> /etc/openqa/client.conf;
+		date > /etc/openqa/db-initialized;
+	fi
+}
+
