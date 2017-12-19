@@ -41,3 +41,6 @@ docker build -t openqa-devel -f Dockerfile-devel .
 docker run -d --cap-add NET_ADMIN -p 80:80 -v /path/to/devel/version/openQA:/usr/share/openqa --name mycontainer openqa-devel
 ```
 
+* Note: the path `/usr/share/openqa/assets/cache` within the container, needs to be writable by user `geekotest`, so be sure to set ownerships/permissions accordingly
+to the path outside the container to attain that.
+
