@@ -4,4 +4,9 @@ RUN zypper in -y ruby ruby2.1-rubygem-sass && zypper clean
 
 EXPOSE 80
 
+ENV PERL_MM_USE_DEFAULT 1
+ENV PERL_EXTUTILS_AUTOINSTALL "--defaultdeps"
+
+RUN perl -MCPAN -e install Pod::Tree
+
 ENTRYPOINT ["/root/run_openqa.sh"]
