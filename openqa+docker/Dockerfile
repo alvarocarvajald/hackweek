@@ -1,9 +1,9 @@
-FROM opensuse:42.2
+FROM opensuse:42.3
 
 # Install openQA and pre-requisites
-RUN zypper ar -f obs://devel:openQA/openSUSE_Leap_42.2 openQA && \
-    zypper ar -f obs://devel:openQA:Leap:42.2/openSUSE_Leap_42.2 openQA-perl-modules && \
-    zypper ar -f http://download.suse.de/ibs/SUSE:/CA/openSUSE_Leap_42.1/SUSE:CA.repo && \
+RUN zypper ar -f obs://devel:openQA/openSUSE_Leap_42.3 openQA && \
+    zypper ar -f obs://devel:openQA:Leap:42.3/openSUSE_Leap_42.3 openQA-perl-modules && \
+    zypper ar -f http://download.suse.de/ibs/SUSE:/CA/openSUSE_Leap_42.3/SUSE:CA.repo && \
     zypper --gpg-auto-import-keys refresh && \
     zypper in -y --force-resolution NetworkManager openQA apache2 which w3m glibc-locale \
                  glibc-locale-32bit perl-App-cpanminus bridge-utils libcap-progs tunctl \
