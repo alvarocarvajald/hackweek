@@ -51,8 +51,7 @@ start_openvswitch() {
 	test -f /etc/openvswitch/conf.db || ovsdb-tool create;
 	ovsdb-server /etc/openvswitch/conf.db -vconsole:emer -vsyslog:err -vfile:info --remote=punix:/var/run/openvswitch/db.sock --private-key=db:Open_vSwitch,SSL,private_key --certificate=db:Open_vSwitch,SSL,certificate --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert --no-chdir --log-file=/var/log/openvswitch/ovsdb-server.log --pidfile=/var/run/openvswitch/ovsdb-server.pid --detach;
 	ovs-vswitchd unix:/var/run/openvswitch/db.sock -vconsole:emer -vsyslog:err -vfile:info --mlockall --no-chdir --log-file=/var/log/openvswitch/ovs-vswitchd.log --pidfile=/var/run/openvswitch/ovs-vswitchd.pid --detach
-	ovs-vsctl set Open_vSwitch . other_config:dpdk-init=true;
-#	/usr/share/openvswitch/scripts/ovs-dpdk-migrate-2.6.sh
+	/usr/share/openvswitch/scripts/ovs-dpdk-migrate-2.6.sh
 }
 
 tunctl_config() {
