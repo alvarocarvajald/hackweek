@@ -2,13 +2,13 @@
 
 Currently openQA supports only postgresql as its database backend, but originally sqlite was also supported. This means there are probably openQA instances in the wild requiring migration to postgresql.
 
-The official documentation of openQA provides a (small guide) [http://open.qa/docs/#db-migration] on how to migrate from sqlite to postgresql, however this is very basic and does not provide a step-by-step procedure if one requires to perform a full migration of all data stored in sqlite to postgresql; the documented procedure includes only migration of API keys, job groups and templates.
+The official documentation of openQA provides a [small guide] (http://open.qa/docs/#db-migration) on how to migrate from sqlite to postgresql, however this is very basic and does not provide a step-by-step procedure if one requires to perform a full migration of all data stored in sqlite to postgresql; the documented procedure includes only migration of API keys, job groups and templates.
 
 However, it is indeed possible to migrate all the data in the sqlite database file to the postgresql database as shown in this document.
 
 ### Disclaimer
 
-The procedure described in this document was tested with openQA version 4.6.1531161673. Newer versions could feature different (more/fewer) columns in some of the tables, so it is recommended to verify the structure of the tables both on the original sqlite and on the postgresql databases before importing the data by any automated tool, including the (script) [sqlite2pg.sh] in this directory.
+The procedure described in this document was tested with openQA version 4.6.1531161673. Newer versions could feature different (more/fewer) columns in some of the tables, so it is recommended to verify the structure of the tables both on the original sqlite and on the postgresql databases before importing the data by any automated tool, including the [script] (sqlite2pg.sh) in this directory.
 
 ### Preparation
 
@@ -54,7 +54,7 @@ systemctl stop openqa-gru
 
 #### postgres
 
-Install and configure postgres according to (these specifications) [http://open.qa/docs/#setup-postgresql].
+Install and configure postgres according to [these specifications] (http://open.qa/docs/#setup-postgresql).
 
 #### Restart openqa: Initial posgresql setup
 
