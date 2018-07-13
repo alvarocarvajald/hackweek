@@ -72,7 +72,7 @@ At this time you should be able to connect to the web UI of the openQA instance,
 
 ### Data Import
 
-#### Import sqlite data to postgresql
+#### Identify tables
 
 Starting from the dump file (Ex: `/var/lib/oqa.dump`), most INSERT statements need to be imported to the postgresql database. Extract them to another file by running:
 
@@ -112,6 +112,8 @@ cat all-import-inserts.* | sort > check2
 diff check1 check2
 rm check1 check2
 ```
+
+#### Import sqlite data to postgresql
 
 With all the insert sentences divided in several files per table, all that is needed now is to identify which tables have changed between sqlite and postgresql and run the insert sentences, and to run the inserts in the proper order. In most cases, all that is needed is this:
 
