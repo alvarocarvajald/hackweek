@@ -1,6 +1,6 @@
 ## How to migrate an openqa instance from sqlite to postgres
 
-Currently openQA supports only postgresql as its database backend, but originally sqlite was also supported. This means there are probably openQA instances in the wild requiring migration to postgresql.
+Currently [openQA](http://open.qa) supports only postgresql as its database backend, but originally sqlite was also supported. This means there are probably openQA instances in the wild requiring migration to postgresql.
 
 The official documentation of openQA provides a [small guide](http://open.qa/docs/#db-migration) on how to migrate from sqlite to postgresql, however this is very basic and does not provide a step-by-step procedure if one requires to perform a full migration of all data stored in sqlite to postgresql; the documented procedure includes only migration of API keys, job groups and templates.
 
@@ -69,6 +69,8 @@ systemctl start openqa-gru
 ```
 
 At this time you should be able to connect to the web UI of the openQA instance, but it should show no job results, job groups, templates, etc. It has basically an empty openqa database schema in postgresql.
+
+### Data Import
 
 #### Import sqlite data to postgresql
 
