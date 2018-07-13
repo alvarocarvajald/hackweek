@@ -140,7 +140,7 @@ rm all-import-inserts.users
 The *assets* table has some extra columns, so that needs to be taken into account:
 
 ```
-sed 's/NULL,NULL/NULL,NULL,NULL,FALSE/' all-import-inserts.assets | while read i; do psql -U postgres -d openqa -c "$i"; done
+sed -r -e 's/.+\(//' -e 's/\);//' all-import-inserts.assets | awk -F, 'BEGIN {OFS=","} ($5=$5",NULL,FALSE") { print $0 }' | while read i; do psql -U postgres -d openqa -c "INSERT INTO \"assets\" VALUES($i)"; done
 tail -1 all-import-inserts.assets >> seqs
 rm all-import-inserts.assets
 ```

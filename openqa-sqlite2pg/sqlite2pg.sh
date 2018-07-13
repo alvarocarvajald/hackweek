@@ -72,8 +72,8 @@ function process_assets_table()
 {
     local FILE="$1-assets-$$"
     echo "Processing file [$FILE]"
-    sed 's/NULL,NULL/NULL,NULL,NULL,FALSE/' "$FILE" | while read s; do
-        psql -U postgres -d openqa -c "$s"
+    sed -r -e 's/.+\(//' -e 's/\);//' "$FILE" | awk -F, 'BEGIN {OFS=","} ($5=$5",NULL,FALSE") { print $0 }' | while read i; do
+        psql -U postgres -d openqa -c "INSERT INTO \"assets\" VALUES($i)"
     done
     tail -1 "$FILE" >> $SEQSFILE
     report_num_rows "$FILE"
