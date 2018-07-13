@@ -72,7 +72,7 @@ At this time you should be able to connect to the web UI of the openQA instance,
 
 ### Data Import
 
-#### Identify tables
+#### Identify insert sentences and tables
 
 Starting from the dump file (Ex: `/var/lib/oqa.dump`), most INSERT statements need to be imported to the postgresql database. Extract them to another file by running:
 
