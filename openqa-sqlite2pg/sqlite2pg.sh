@@ -60,7 +60,7 @@ function process_users_table()
 {
     local FILE="$1-users-$$"
     echo "Processing file [$FILE]"
-    egrep -v 'noemail@open.qa|admin@example.com' "$FILE" | sed -r -e 's/VALUES\(([0-9]+)/VALUES\(\1+1/' | while read s; do
+    sed -r -e '/noemail@open.qa/d' -e '/admin@example.com/d' -e 's/VALUES\(([0-9]+)/VALUES\(\1+1/' "$FILE" | while read s; do
         psql -U postgres -d openqa -c "$s"
     done
     tail -1 "$FILE" >> $SEQSFILE

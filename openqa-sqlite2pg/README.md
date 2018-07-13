@@ -130,7 +130,7 @@ Exceptions being:
 * *users* table:
 
 ```
-egrep -v 'noemail@open.qa|admin@example.com' all-import-inserts.users | sed -r 's/VALUES\(([0-9]+)/VALUES\(\1+1/' | while read i; do psql -U postgres -d openqa -c "$i"; done
+sed -r -e '/noemail@open.qa/d' -e '/admin@example.com/d' -e 's/VALUES\(([0-9]+)/VALUES\(\1+1/' all-import-inserts.users | while read i; do psql -U postgres -d openqa -c "$i"; done
 tail -1 all-import-inserts.users >> seqs
 rm all-import-inserts.users
 ```
