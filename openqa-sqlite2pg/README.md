@@ -83,17 +83,19 @@ grep INSERT oqa.dump | egrep -v 'dbix_class_deploymenthandler_versions|users_tem
 This creates the text file `all-import-inserts` which contains all the INSERT statements that need to be executed in postgresql, however some of these sentences require some syntax adjustments before attempting to run them on postgresql. The mismatch are basically of two kinds:
 
 * sqlite has booleans as 0/1 integer values, so those need to be replace with TRUE and FALSE as needed.
-* Some tables in postgresql has different number of columns than in sqlite.
+* Some tables in postgresql have different number of columns than in sqlite.
 
 Additionally, the order of the INSERT sentences is very important, as some foreign key relationships prevent the insertions of new rows in tables (for example, any table that has references to jobs, such as job_modules, will require the referenced job row to be already in the jobs table)
 
 Next step is to split the `all-import-inserts` file into several files, one for each table, so as to more easily process the order of the insertions, and the syntax corrections on the SQL sentences. The following command does the split per tables:
 
 ```
-awk '{print $3}' < all-import-inserts | uniq | while read i; do grep $i all-import-inserts > all-import-inserts.$(echo $i|sed 's/\"//g'); done
+awk '{print $3}' < all-import-inserts | uniq | while read t; do grep $t all-import-inserts > all-import-inserts.$(echo $t|sed 's/\"//g'); done
 ```
 
-This is not the most efficient way as we are running a grep on the file for each table, in essence reading the `all-import-inserts` file as many times as there are tables defined in the database, plus one to get the initial list of tables. A more efficient way would be to process the file in a proper scripting language (perl or python, for example).
+This will create files with the name `all-import-inserts.<table name>`.
+
+This is not the most efficient way as we are running a grep on the file for each table, in essence reading the `all-import-inserts` file as many times as there are tables defined in the database, plus one to get the initial list of tables. A more efficient way would be to process the file once in a proper scripting language (perl or python, for example), and create the table files in one read.
 
 After splitting the file, check that the content of the original file is fully present and not duplicated in the new files.
 
