@@ -41,7 +41,7 @@ EXPOSE 80
 RUN chmod +x /root/run_openqa.sh && \
     chown postgres /var/lib/pgsql/data/ && \
     mv /etc/apache2/vhosts.d/openqa.conf.template /etc/apache2/vhosts.d/openqa.conf && \
-    a2enmod headers && a2enmod proxy && a2enmod proxy_http && a2enmod proxy_wstunnel && \
+    a2enmod headers && a2enmod proxy && a2enmod proxy_http && a2enmod proxy_wstunnel && a2enmod rewrite && \
     sed -i -e '/httpsonly/s/.*/httpsonly = 0/' -e '/# method/amethod = Fake' /etc/openqa/openqa.ini && \
     setcap CAP_NET_ADMIN=ep /usr/bin/qemu-system-x86_64 && \
     cp /etc/openqa/workers.ini /root/ && \
