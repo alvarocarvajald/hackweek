@@ -5,7 +5,7 @@
 pvm_hmc-blocked-jobs.pl [OPTIONS]
 
 Search for jobs on local pvm_hmc workers that have no activity for the past TIME
-seconds, and cancels and restarts them.
+seconds, and cancel and restart them.
 
 =head1 OPTIONS
 
@@ -14,8 +14,8 @@ seconds, and cancels and restarts them.
 =item B<--host> HOST
 
 Use HOST as the openQA WebUI where tests are scheduled from. This is used to
-restart jobs automatically. If not specified, script will only cancel matching
-jobs, but not attempt to restart them.
+restart jobs automatically. If not specified, script will pick a host from
+the system's C<client.conf> file or use B<localhost>.
 
 =item B<--time> TIME
 
@@ -32,7 +32,7 @@ is not located in the default directory of C</var/lib/openqa/pool>.
 
 =item B<--config> /path/to/workers.ini
 
-Specifies the locations of the workers.ini configuration file. This is usually
+Specifies the location of the workers.ini configuration file. This is usually
 extraceted from information from the B<openQA-worker> RPM package, but this
 command line option is supplied in case this is not possible and the file
 is not located in the default location of C</etc/openqa/workers.ini>.
@@ -47,6 +47,7 @@ use strict;
 use warnings;
 
 my $openqaconfig;
+my $clientconfig;
 my $workers_basepath;
 my $verbose = 1;
 
@@ -71,8 +72,9 @@ BEGIN {
         while (my $pkg = $i->next) {
             $is_worker = 1;
             foreach my $file ($pkg->files) {
-                $openqaconfig     = $file if ($file =~ /workers.ini/);
+                $openqaconfig     = $file if ($file =~ /workers.ini$/);
                 $workers_basepath = $file if ($file =~ /pool$/);
+                $clientconfig     = $file if ($file =~ /client.conf$/);
             }
         }
         die "It seems this system does not have openQA-worker installed. Will not know what to look for" unless $is_worker;
@@ -129,7 +131,7 @@ sub get_pid {
 sub cancel_job {
     my $pid = shift;
     return if ($pid == 1 or $pid == $$);
-    warn "Killing os-autoinst process [$pid]" if $verbose;
+    log_msg "Killing os-autoinst process [$pid]";
     kill 'TERM', $pid;
 }
 
@@ -138,7 +140,7 @@ sub restart_job {
     my $host  = shift;
     return if ($jobid < 0);
     return unless $host;
-    warn "Restarting job with id [$jobid]" if $verbose;
+    log_msg "Restarting job with id [$jobid]";
     my %options = ( host => $host );
     # OpenQA::Script::Client requires the operation in a function
     # parameter, but the method in ARGV
@@ -157,11 +159,15 @@ my %options;
 
 GetOptions(\%options, 'host=s', 'time=s', 'quiet|q', 'help|h|?', 'pool=s', 'config=s') or usage;
 usage if $options{help};
-warn "WARN: No host specified with --host. Restart of jobs is disabled." unless $options{host};
 $timetowait       = $options{time}   if $options{time};
 $verbose          = 0                if $options{quiet};
 $workers_basepath = $options{pool}   if $options{pool};
 $openqaconfig     = $options{config} if $options{config};
+unless ($options{host}) {
+    my $config = Config::Tiny->read($clientconfig, 'utf8');
+    $options{host} = (keys %$config)[0] || 'localhost';
+    warn "WARN: No host specified with --host. Will use [$options{host}] to restart jobs";
+}
 
 # Todo:
 # supply %text_to_match from config file or from command line
