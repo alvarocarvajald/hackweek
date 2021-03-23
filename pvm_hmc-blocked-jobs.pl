@@ -96,6 +96,7 @@ Getopt::Long::Configure("no_ignore_case");
 # Default values
 $workers_basepath //= '/var/lib/openqa/pool';
 $openqaconfig     //= '/etc/openqa/workers.ini';
+$clientconfig     //= '/etc/openqa/client.conf';
 my $timetowait = 900;
 use constant logfile => 'autoinst-log.txt';
 
@@ -169,9 +170,6 @@ unless ($options{host}) {
     warn "WARN: No host specified with --host. Will use [$options{host}] to restart jobs";
 }
 
-# Todo:
-# supply %text_to_match from config file or from command line
-
 log_msg "Starting";
 
 my @ppc_workers = ();
@@ -181,6 +179,9 @@ foreach (keys %$config) {
 }
 
 log_msg "Will check workers: [" . join('|', @ppc_workers) . "]";
+
+# Todo:
+# supply %text_to_match from config file or from command line
 
 my %text_to_match = (
     'tests/installation/partitioning_finish.pm' => 'testapi::wait_still_screen'
