@@ -85,11 +85,11 @@ BEGIN {
 }
 
 use Tie::File;
-use IO::File;
 use Time::ParseDate;
 use JSON;
 use Config::Tiny;
-use OpenQA::Script::Client;
+use Mojo::File qw(path);
+use OpenQA::CLI::api;
 use Getopt::Long;
 Getopt::Long::Configure("no_ignore_case");
 
@@ -98,6 +98,7 @@ $workers_basepath //= '/var/lib/openqa/pool';
 $openqaconfig     //= '/etc/openqa/workers.ini';
 $clientconfig     //= '/etc/openqa/client.conf';
 my $timetowait = 900;
+my $api        = OpenQA::CLI::api->new() or die "Cannot instance OpenQA::CLI::api\n";
 use constant logfile => 'autoinst-log.txt';
 
 # Subs
@@ -109,22 +110,14 @@ sub log_msg {
 
 sub get_job_id {
     my $worker   = shift;
-    my $jobdata  = "$workers_basepath/$worker/job.json";
-    my $fh       = new IO::File $jobdata or die "Cannot open file [$jobdata] for reading: $!\n";
-    my $jsontext = do { local $/; <$fh> };
-    $fh->close;
-    undef $fh;
-    my $json = decode_json $jsontext;
+    my $jsontext = path($workers_basepath, $worker, 'job.json')->slurp;
+    my $json     = decode_json $jsontext;
     return $json->{id};
 }
 
 sub get_pid {
-    my $worker  = shift;
-    my $pidfile = "$workers_basepath/$worker/os-autoinst.pid";
-    my $fh      = new IO::File $pidfile or die "Cannot open file [$pidfile] for reading: $!\n";
-    my $pid = <$fh>;
-    $fh->close;
-    undef $fh;
+    my $worker = shift;
+    my $pid    = path($workers_basepath, $worker, 'os-autoinst.pid')->slurp;
     chomp $pid;
     return $pid;
 }
@@ -142,11 +135,7 @@ sub restart_job {
     return if ($jobid < 0);
     return unless $host;
     log_msg "Restarting job with id [$jobid]";
-    my %options = ( host => $host );
-    # OpenQA::Script::Client requires the operation in a function
-    # parameter, but the method in ARGV
-    unshift @ARGV, 'post';
-    run(\%options, "jobs/$jobid/restart");
+    $api->run('--host', $host, '-X', 'POST', "jobs/$jobid/restart")
 }
 
 sub usage {
