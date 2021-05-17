@@ -143,10 +143,8 @@ sub usage {
     die "cannot display help, install perl(Pod::Usage)\n" if $@;
 }
 
-# Default values
-my $api = OpenQA::CLI::api->new() or die "Cannot instance OpenQA::CLI::api\n";
-
 # Main
+my $api  = OpenQA::CLI::api->new() or die "Cannot instance OpenQA::CLI::api\n";
 my $host = $ENV{host} ? $ENV{host} : 'openqa.opensuse.org';
 
 usage unless ($jobid);
