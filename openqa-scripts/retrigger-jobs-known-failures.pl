@@ -16,12 +16,15 @@ environment variables, as described below.
 =item B<config=/path/to/config/file.ini>
 
 A configuration file with rules to determine which failed jobs are known and will require to be restarted. Currently there
-are 2 types of rules, each corresponding to a section in the config file:
+are 3 types of rules, each corresponding to a section in the config file:
 
 B<by_number>: job failed on a given test module, and uploaded a specific number of test details.
 
 B<by_text>: job failed on a given test module, and the error text present in a failed detail matches the regular expression
 defined in the configuration file.
+
+B<by_text_all>: just like B<by_text> but it will attempt to match the regular expression in all detail screens, and not just
+on failed ones. As such this option is slower, and more broad. Use with care.
 
 For example, a configuration file would look like this:
 
@@ -129,10 +132,12 @@ sub is_retriggerable {
         my $screens = @{$job->{details}};
         return 1 if ($screens == $config->{by_number}->{$testname});
     }
-    if ($config->{by_text}->{$testname}) {
-        foreach my $i (@{$job->{details}}) {
-            next unless ($i->{result} eq 'fail');
-            return 1 if ($i->{text_data} && $i->{text_data} =~ /$config->{by_text}->{$testname}/);
+    foreach my $type (qw(by_text by_text_all)) {
+        if ($config->{$type}->{$testname}) {
+            foreach my $i (@{$job->{details}}) {
+                next if (($type eq 'by_text') and ($i->{result} ne 'fail'));
+                return 1 if ($i->{text_data} && $i->{text_data} =~ /$config->{$type}->{$testname}/);
+            }
         }
     }
     return 0;
