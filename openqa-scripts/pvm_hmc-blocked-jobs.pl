@@ -33,13 +33,15 @@ is not located in the default directory of C</var/lib/openqa/pool>.
 =item B<--config> /path/to/workers.ini
 
 Specifies the location of the workers.ini configuration file. This is usually
-extraceted from information from the B<openQA-worker> RPM package, but this
+extracted from information from the B<openQA-worker> RPM package, but this
 command line option is supplied in case this is not possible and the file
 is not located in the default location of C</etc/openqa/workers.ini>.
 
 =item B<--quiet>
 
 By default information messages are printed on STDOUT. This option disables them.
+
+=back
 
 =cut
 
