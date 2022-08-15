@@ -1,0 +1,29 @@
+#!/usr/bin/perl
+
+BEGIN {
+    unshift @INC, '/usr/share/openqa/lib';
+}
+
+use Capture::Tiny qw(capture);
+use Mojo::JSON qw(decode_json encode_json);
+use OpenQA::CLI::api;
+use strict;
+use warnings;
+
+my @group_ids = qw();
+
+foreach my $group (@group_ids) {
+    my $api  = OpenQA::CLI::api->new() or die "Cannot instance OpenQA::CLI::api\n";
+    my ($stdout, $stderr, $retval) = capture { $api->run('--osd', '-X', 'GET', '--pretty', "job_groups/$group") };
+    my $json = decode_json($stdout);
+    my $data = { name => $json->[0]->{name}, description => $json->[0]->{description} };
+    if ($data->{description} =~ /QE-SAP/) {
+        $data->{description} = 'New Description';
+        print "Group name:[$data->{name}],id:$group is a QE-SAP job group. It will be updated\n";
+        $api->run('--osd', '-X', 'PUT', '--form', '--data', encode_json($data), "job_groups/$group");
+    }
+    else {
+        print "Group name:[$data->{name}],id:$group is not an exclusive QE-SAP job group. Skipping.\n";
+    }
+}
+
