@@ -18,7 +18,8 @@ environment variables, as described below.
 A configuration file with rules to determine which failed jobs are known and will require to be restarted. Currently there
 are 3 types of rules, each corresponding to a section in the config file:
 
-B<by_number>: job failed on a given test module, and uploaded a specific number of test details.
+B<by_number>: job failed on a given test module, and uploaded a specific number of test details. Can be a comma separated
+list of values.
 
 B<by_text>: job failed on a given test module, and the error text present in a failed detail matches the regular expression
 defined in the configuration file.
@@ -29,7 +30,7 @@ on failed ones. As such this option is slower, and more broad. Use with care.
 For example, a configuration file would look like this:
 
     [by_number]
-    some_test_module=21
+    some_test_module=21,23
     some_test_module#1=19
     other_test_module=5
 
@@ -130,7 +131,9 @@ sub is_retriggerable {
     return 0 unless ($config);
     if ($config->{by_number}->{$testname}) {
         my $screens = @{$job->{details}};
-        return 1 if ($screens == $config->{by_number}->{$testname});
+        foreach my $confval (split(/,/, $config->{by_number}->{$testname})) {
+            return 1 if ($screens == $confval);
+        }
     }
     foreach my $type (qw(by_text by_text_all)) {
         if ($config->{$type}->{$testname}) {
