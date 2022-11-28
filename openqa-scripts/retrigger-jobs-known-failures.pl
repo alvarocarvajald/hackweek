@@ -163,6 +163,6 @@ my $job = decode_json $stdout;
 check_if_excluded($job->{job}->{settings}) if $ENV{exclude};
 my $config = Config::Tiny->read($ENV{config}, 'utf8') if $ENV{config};
 foreach my $t (@{$job->{job}->{testresults}}) {
-    $api->run('--host', $host, '-X', 'POST', "jobs/$jobid/restart") if ($t->{result} eq 'failed' && is_retriggerable($t, $config));
+    $api->run('--host', $host, '-X', 'POST', "jobs/$jobid/restart") if (($t->{result} =~ /^(canceled|incomplete|failed)$/) && is_retriggerable($t, $config));
 }
 
