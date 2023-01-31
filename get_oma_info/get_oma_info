@@ -1,0 +1,100 @@
+#!/usr/bin/perl
+
+=head1 SYNOPSIS
+
+get_oma_info [OPTIONS]
+
+Extract track information from OpenMG/ATRAC files and print it to stdout.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--file> FILENAME
+
+Extract information from the given filename and print it to stdout.
+
+=item B<--dir> DIRECTORY
+
+Search files with B<.OMA> or B<.OMG> extensions in the supplied directory and extract the information from them to print. In case both B<--file> and B<--dir> are supplied, B<--file> will take precedence.
+
+=item B<--csv>
+
+If supplied, output will be printed in a comma separated values format for easier processing.
+
+=back
+
+=cut
+
+use IO::File;
+use IO::Dir;
+use Getopt::Long;
+use Data::Dumper;
+use strict;
+use warnings;
+use vars qw($csv $help $file $dir);
+
+sub get_info_from_file {
+    my %results = ( orig_file => shift );
+    my $fh = new IO::File->new($results{orig_file}, '<:raw') or die "Cannot open file: $!\n";
+    my $buffer = '';
+    my @specials = (chr(025), chr(037), chr(027), chr(023), chr(001), chr(031), chr(035), chr(021));
+
+    read($fh, $buffer, 1024);
+    $buffer =~ s/[\0\r\n\v\2]//g;
+    foreach (@specials) { $buffer =~ s/$_//g; }
+    ($buffer) = split(/TLEN/, $buffer);    # Ignore everything after TLEN
+    if ($buffer =~ m/TIT[12](.*)TPE[12](.*)TALB(.*)TCON/) {
+        $results{title} = $1;
+        $results{artist} = $2;
+        $results{album} = $3;
+    }
+    $results{genre} = $1 if ($buffer =~ /TCON(.+)$/);
+    if ($buffer =~ /TCON(.+)[TW]XXX/) {
+        $results{genre} = $1;
+        $results{genre} =~ s/[TW]XXX.*//;
+        $results{genre} =~ s/^\s+//;
+    }	
+
+    $fh->close;
+    return \%results;
+}
+
+sub print_results {
+    if ($csv) {
+        print "Title,Artist,Album,Genre,Original File\n";
+        print join(',', $_->{title}, $_->{artist}, $_->{album}, $_->{genre}, $_->{orig_file}), "\n"
+            foreach (@_);
+        return;
+    }
+    print Dumper @_;
+}
+
+sub usage {
+    eval { require Pod::Usage; Pod::Usage::pod2usage(1); };
+    die "cannot display help, install perl(Pod::Usage)\n" if $@;
+}
+
+my @results = ();
+$csv = 0;
+$help = 0;
+
+GetOptions("file=s" => \$file,
+           "dir=s"  => \$dir,
+           help     => \$help,
+           csv      => \$csv) or usage;
+
+usage() if ($help or (!$file and !$dir));
+
+if ($file) {
+    print_results(get_info_from_file $file);
+}
+else { # $dir is set
+    tie my %dir, 'IO::Dir', $dir or die "Cannot open dir $dir: $!\n";
+    foreach (keys %dir) {
+        next unless (/\.om[ag]/i);
+        push @results, get_info_from_file $_;
+    }
+    print_results @results;
+}
+
