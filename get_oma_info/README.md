@@ -84,3 +84,12 @@ Or save it as a CSV:
 
 ```
 ./get_oma_info --dir /path/to/my/directory --csv > tracks.csv
+
+## Related Links
+
+More information is available at:
+
+* https://ubuntuforums.org/archive/index.php/t-1271969.html
+* https://forums.sonyinsider.com/topic/30682-decryption-of-atrac3plus-oma-files-by-ffmpeg/
+* https://forum.dbpoweramp.com/showthread.php?7532-Sony-OMA-OMG-File-Conversion-Some-actual-facts
+
