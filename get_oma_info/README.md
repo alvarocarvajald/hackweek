@@ -86,6 +86,56 @@ Or save it as a CSV:
 ./get_oma_info --dir /path/to/my/directory --csv > tracks.csv
 ```
 
+## get_dat_info
+
+Also included in this repository, is the `get_dat_info` script which can be used to process some of the .DAT data files
+that can be found next to OpenMG files in some devices. A best effort is being made in `get_dat_info` to extract as much
+information is possible for any given DAT data file. At the moment the script manages to identify 3 types of data files:
+
+* Files containing a list of **Tracks** with its corresponding **Artist**, **Album** and **Genre**. This could be a central
+database for the media in the device.
+* Files containing a list of **List Names** with its corresponding **Artist** and **Genre** if defined.
+* Files containing a simple list of titles (could be track names, genres, etc.)
+
+### Usage
+
+    get_dat_info [OPTIONS]
+
+    Extract information from data files (.DAT) associated with OMA files.
+
+### Options
+
+* `--file FILENAME`: Extract information from the given filename and print it to stdout.
+
+### Examples
+
+```
+# ./get_dat_info -f 03GINF01.DAT | head -5
+List,Artist,Genre
+salsa * merengue,,
+reggaeton,,
+emo + punk + rock,,
+Movidas *tops,,
+```
+
+```
+# ./get_dat_info -f 03GINF02.DAT | head -5
+name: [30 Seconds To Mars]
+name: [Fort Minor]
+name: [Taking Back Sundayc]
+name: [Collective Soul]
+name: [David Guetta]
+```
+
+```
+# ./get_dat_info -f 04CNTINF.DAT | head -5
+Track,Artist,Album,Genre
+Camisado,Panic! At The Disco,,Other
+Tremble for My Beloved,Collective Soul,Dosage,Alternative
+Taste Of Ink,The Used,Berth,Rock
+Do It Well [Ft. Ludacris][Bonu,Jennifer Lopez,Brave,R&B
+```
+
 ## Related Links
 
 More information is available at:

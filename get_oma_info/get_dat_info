@@ -1,0 +1,75 @@
+#!/usr/bin/perl
+
+=head1 SYNOPSIS
+
+get_dat_info [OPTIONS]
+
+Extract information from data files (.DAT) associated with OMA files.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--file> FILENAME
+
+Extract information from the given filename and print it to stdout.
+
+=back
+
+=cut
+
+use Mojo::File qw(path);
+use IO::File;
+use Getopt::Long;
+use strict;
+use warnings;
+use vars qw($help $file);
+
+sub process_file {
+    my $file = shift;
+    my $data = path($file)->slurp;
+    my @specials = (chr(025), chr(037), chr(027), chr(023), chr(001), chr(031),
+                    chr(035), chr(021), chr(221), chr(300), chr(360), chr(036),
+		    chr(020), chr(200), chr(371), chr(357), chr(242), chr(032),
+                    chr(216), chr(221), chr(334), chr(213));
+    $data =~ s/[\0\r\n\v\2\3\6]//g;
+    $data =~ s/,/_/g;
+    foreach (@specials) { $data =~ s/$_//g; }
+    my @res = split(/TIT2/, $data);
+    if ($data =~ /TPE.*TALB/) {    # Assume track, artist & album format
+        print "Track,Artist,Album,Genre\n";
+        foreach (@res) {
+            print "$1,$2,$3,$4\n" if (/^(.*)TPE\d(.*)TALB(.*)TCON(.*)TSOP/);
+        }
+    }
+    elsif ($data =~ /TPE/) {    # Assume list format
+        print "List,Artist,Genre\n";
+        foreach (@res) {
+            print "$1,$2,$3\n" if (/^(.*)TPE\d(.*)TCON(.*)TSOP/);
+        }
+    }
+    else {
+        shift @res;
+        shift @res;
+        foreach (@res) {
+            $_ =~ s/[^\w\s\d\&\.\-\[\]\'\*\/\+\?\(\)]//g;
+            print "name: [$_]\n";
+        };
+    }
+}
+
+sub usage {
+    eval { require Pod::Usage; Pod::Usage::pod2usage(1); };
+    die "cannot display help, install perl(Pod::Usage)\n" if $@;
+}
+
+my @results = ();
+$help = 0;
+
+GetOptions("file=s" => \$file,
+           help     => \$help) or usage;
+
+usage() if ($help or !$file);
+
+process_file $file;
+
