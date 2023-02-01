@@ -84,6 +84,7 @@ Or save it as a CSV:
 
 ```
 ./get_oma_info --dir /path/to/my/directory --csv > tracks.csv
+```
 
 ## Related Links
 
