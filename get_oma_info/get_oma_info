@@ -63,8 +63,10 @@ sub get_info_from_file {
 sub print_results {
     if ($csv) {
         print "Title,Artist,Album,Genre,Original File\n";
-        print join(',', $_->{title}, $_->{artist}, $_->{album}, $_->{genre}, $_->{orig_file}), "\n"
-            foreach (@_);
+        foreach (@_) {
+            foreach my $key (keys %{$_}) { $_->{$key} =~ s/,/_/g; }
+            print join(',', $_->{title}, $_->{artist}, $_->{album}, $_->{genre}, $_->{orig_file}), "\n"
+        }
         return;
     }
     print Dumper @_;
