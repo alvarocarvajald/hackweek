@@ -25,6 +25,15 @@ use strict;
 use warnings;
 use vars qw($help $file);
 
+sub strip_and_print_with_label {
+    my $label = shift;
+    foreach (@_) {
+        next unless ($_);
+        $_ =~ s/[^\w\s\d\&\.\-\[\]\'\*\/\+\?\(\)]//g;
+        print "$label: [$_]\n";
+    }
+}
+
 sub process_file {
     my $file = shift;
     my $data = path($file)->slurp;
@@ -49,12 +58,14 @@ sub process_file {
         }
     }
     else {
-        shift @res;
-        shift @res;
-        foreach (@res) {
-            $_ =~ s/[^\w\s\d\&\.\-\[\]\'\*\/\+\?\(\)]//g;
-            print "name: [$_]\n";
-        };
+        my $first = shift @res;
+        my $second = shift @res;
+        if (@res) {
+            strip_and_print_with_label 'name', @res;
+        }
+        else {
+            strip_and_print_with_label 'unknown', $first, $second;
+        }
     }
 }
 
