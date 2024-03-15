@@ -1,0 +1,51 @@
+Session 1: get stuff up and running: SLES->RKE->K3S->rancher
+
+3 systems: 1 to rancher, 1 for deployments on kubernetes
+
+RKE -> datacenter ready
+K3S -> edge computing
+
+Rancher/RKE requirements: https://rancher.com/docs/rancher/v2.5/en/installation/requirements/
+
+https://github.com/SUSE/suse-at-home
+
+Installs SLES+Container module
+
+Disable FW
+
+https://github.com/SUSE/suse-at-home/blob/main/install/InstallRKEonSLES15x86_64.md
+
+https://github.com/SUSE/suse-at-home/blob/main/install/InstallRancher-Helm.md
+
+https://github.com/rancher/rke2-packaging
+
+https://hackweek.suse.com/20/projects/suse-at-home
+
+https://rancher.com/docs/rancher/v2.x/en/backups/v2.5/examples/
+
+About longhorn:
+say you wanted to attach a bunch of disks (e.g. /dev/sdb /dev/sdc /dev/sdd, sde, sdf, etc)...
+
+create an LVM pv and lv, format with xfs and mount it to /var/lib/longhorn...
+
+example:
+
+pvcreate /dev/sdb /dev/sdc /dev/sdd /dev/sde /dev/sdf
+vgcreate vg_longhorn /dev/sdb /dev/sdc /dev/sdd /dev/sde /dev/sdf
+lvcreate -n vg_longhorn/lv_longhorn -l100%FREE
+mkfs.xfs /dev/vg_longhorn/lv_longhorn
+mkdir /var/lib/longhorn
+echo "/dev/vg_longhorn/lv_longhorn /var/lib/longhorn xfs defaults 0 0" >>/etc/fstab
+mount /var/lib/longhorn
+
+https://rancher.com/docs/rancher/v2.x/en/cluster-admin/backing-up-etcd/
+
+https://rancher.com/docs/rancher/v2.x/en/backups/v2.0.x-v2.4.x/backup/rke-backups/
+
+A bunch of 'block lists" on GitHub. These can added very easily to pi-hole to enhance the filtering. https://github.com/topics/pihole-blocklists
+
+https://doc.traefik.io/traefik/v1.7/user-guide/kubernetes/#path-based-routing
+
+Lab: tux@10.162.31.248 - tux@10.162.31.88
+Lab Day2: add: Longhorn, check cluster snapshot, Install and Configure metallb, pi-hole
+Lab Day3:
