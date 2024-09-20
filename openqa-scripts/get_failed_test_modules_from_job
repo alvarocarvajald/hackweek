@@ -1,0 +1,99 @@
+#!/usr/bin/perl
+
+=head1 SYNOPSIS
+
+    get_failed_test_modules_from_job -j <job_id> [-s openQA server]
+    get_failed_test_modules_from_job -f </path/to/list/of/job/id/file> [-s openQA server]
+    get_failed_test_modules_from_job -h
+
+Lists for a given job id the test modules which failed the test. If the test did not fail, it
+will not print anything.
+
+=head1 OPTIONS
+
+Script takes either a job id in the command line with the C<-j> option, or a plain text file
+with the C<-f> option where each line contains a job id. No parsing is done to the file.
+
+C<-h> will print this help.
+
+C<-s> can be used to specify the FQHN of the openQA instance to query. If no C<-s> option is
+included in the command line, then B<openqa.suse.de> is used.
+
+C<-S> will print a summary at the end (only useful with C<-f>).
+
+C<-v> will print debug information.
+
+The script requires C<OpenQA::CLI::api> to be installed and in C</usr/share/openqa/lib>, and
+C<Mojo::File>.
+
+=cut
+    
+use strict;
+use warnings;
+
+BEGIN {
+    unshift @INC, '/usr/share/openqa/lib';
+}
+
+use OpenQA::CLI::api;
+use Capture::Tiny qw(capture);
+use Getopt::Std;
+use Mojo::File qw(path);
+use JSON qw(decode_json);
+
+our($opt_h, $opt_f, $opt_s, $opt_j, $opt_v, $opt_S);
+our %TOTALS = ();
+
+sub usage {
+    eval { require Pod::Usage; Pod::Usage::pod2usage(1); };
+    die "cannot display help, install perl(Pod::Usage)\n" if $@;
+}
+
+sub print_failed_module {
+    my $api   = shift;
+    my $jobid = shift;
+    die "\$api is not of class OpenQA::CLI::api" unless (ref $api eq 'OpenQA::CLI::api');
+    my ($stdout, $stderr, $retval) = capture { $api->run('--host', $opt_s, '-X', 'GET', '--pretty', "jobs/$jobid/details"); };
+    die "openqa-cli call failed with retval=[$retval] and err=[$stderr]\n" if ($retval || $stderr);
+    my $job = decode_json($stdout);
+    my %res = ();
+    foreach my $j (@{$job->{job}->{testresults}}) {
+        foreach my $d (@{$j->{details}}) {
+            if ($d->{result} eq 'fail') {
+                my $test_module_name = $d->{text};
+                $test_module_name =~ s/\-\d+\.txt//;
+                $res{$test_module_name} = 1;
+            }
+	}
+    }
+    my @res = sort(keys %res);
+    print "$jobid - ", join(', ', @res), "\n" if (@res);
+    $TOTALS{join('-', @res)}++ if ($opt_S);
+}
+
+# Main
+
+getopts('hf:s:j:vS');
+
+usage if $opt_h;
+usage unless ($opt_j || $opt_f);
+usage if ($opt_j && $opt_f);
+$opt_s //= 'openqa.suse.de';
+
+my $api = OpenQA::CLI::api->new() or die "Cannot instance OpenQA::CLI::api\n";
+
+if ($opt_f) {
+    print "host: [$opt_s], job_id_file: [$opt_f]\n" if $opt_v;
+    my $file = path($opt_f);
+    my @ids = split(/\n/, $file->slurp);
+    print 'job_ids:', join(':', @ids), "\n" if $opt_v;
+    print_failed_module($api, $_) for (@ids);
+}
+else {
+    print "host: [$opt_s], job_id: [$opt_j]\n" if $opt_v;
+    print_failed_module($api, $opt_j);
+}
+if ($opt_S) {
+    print "\nSummary per tests:\n";
+    foreach my $k (keys %TOTALS) { print "$k - $TOTALS{$k}\n"; }
+}
