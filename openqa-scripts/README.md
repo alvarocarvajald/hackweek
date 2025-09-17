@@ -13,7 +13,7 @@ where `openqa-cli` is installed, usually in `/usr/share/openqa/script`. It shoul
 If installed in the openQA instance itself (where webUI and scheduler are located) all script dependencies
 should already present. Otherwise, make sure script is installed in a system with openQA-client.
 
-Other perl dependencies user are:
+Other perl dependencies used are:
 
 * RPM2
 * Capture::Tiny
@@ -38,7 +38,7 @@ Script to search for blocked jobs and stop and restart them.
 
 This script must be added to the crontab of a system where openQA-worker and openQA-client are installed, where
 once run it will determine the list of workers and check each workers' `autoinst-log.txt` for the date of the
-last logged message; if the worker's last logged message if greater than a given time, it will consider the job
+last logged message; if the worker's last logged message is greater than a given time, it will consider the job
 blocked, in which case it will send SIGTERM to the `os-autoinst` process associated to the job to terminate it,
 and restart the job.
 
