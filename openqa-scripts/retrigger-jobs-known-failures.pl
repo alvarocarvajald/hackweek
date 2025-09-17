@@ -2,30 +2,48 @@
 
 =head1 SYNOPSIS
 
-    env config=/path/to/config/file.ini host=my.openqa.org exclude=SETTING:value,OTHER_SETTING:value retrigger-jobs-known-failures.pl JOBID
+    env config=/path/to/config/file.ini host=my.openqa.org exclude=SETTING:value,OTHER_SETTING:value /usr/share/openqa/script/retrigger-jobs-known-failures.pl JOBID
 
 openQA job_done_hook script to restart failed jobs that match a criteria specified in a configuration file.
+
+=head1 INSTALLATION
+
+Clone this repository and copy the script and its configuration file in appropriate places. Since recent versions
+of C<openQA-client> (at least on C<openQA-client-5.1758036156> and newer), script has to be located in the same
+directory where C<openqa-cli> is located, usually C</usr/share/openqa/script>; otherwise it will fail to locate
+some of the C<openQA-cient> assets which are usually installed under C</usr/share/openqa>.
+
+If unsure where C<openqa-cli> is installed, this can be seen on the C<openQA-client> package information with
+C<rpm -q -l openQA-client> or C<dpkg -L openqa-client> or with the command C<realpath $(which openqa-cli)>.
+
+Configuration file can be installed anywhere where the openQA users can read the file, for example in
+C</usr/local/share>.
+
+After both script and configuration file are in their intended places, next step is to configure them in
+C</etc/openqa/openqa.ini> as hooks. For example, by adding:
+
+    job_done_hook_failed = env host=openqa.opensuse.org config=/usr/local/share/retrigger-jobs-known-failures.ini /usr/share/openqa/script/retrigger-jobs-known-failures.pl
 
 =head1 OPTIONS
 
 Script itself receives only one argument in the command line (the B<jobid>), but some options are available via
 environment variables, as described below.
 
-=over 4
+=over
 
 =item B<config=/path/to/config/file.ini>
 
-A configuration file with rules to determine which failed jobs are known and will require to be restarted. Currently there
+A configuration file with rules to determine which failed jobs are known and will require a restart. Currently there
 are 3 types of rules, each corresponding to a section in the config file:
-
-B<by_number>: job failed on a given test module, and uploaded a specific number of test details. Can be a comma separated
-list of values.
 
 B<by_text>: job failed on a given test module, and the error text present in a failed detail matches the regular expression
 defined in the configuration file.
 
 B<by_text_all>: just like B<by_text> but it will attempt to match the regular expression in all detail screens, and not just
 on failed ones. As such this option is slower, and more broad. Use with care.
+
+B<by_number>: job failed on a given test module, and uploaded a specific number of test details. Can be a comma separated
+list of values. As this option does not look for a specific error match, use with care.
 
 For example, a configuration file would look like this:
 
@@ -100,7 +118,7 @@ BEGIN {
 }
 
 use Capture::Tiny qw(capture);
-use OpenQA::CLI::api;
+use OpenQA::CLI;
 use JSON;
 use Config::Tiny;
 
@@ -152,17 +170,18 @@ sub usage {
 }
 
 # Main
-my $api  = OpenQA::CLI::api->new() or die "Cannot instance OpenQA::CLI::api\n";
+my $api  = OpenQA::CLI->new() or die "Cannot instance OpenQA::CLI\n";
 my $host = $ENV{host} ? $ENV{host} : 'openqa.opensuse.org';
 
 usage unless ($jobid);
 
-my ($stdout, $stderr, $retval) = capture { $api->run('--host', $host, '-X', 'GET', '--pretty', "jobs/$jobid/details"); };
+my @api_common = ('api', '--host', $host, '-X');
+my ($stdout, $stderr, $retval) = capture { $api->run(@api_common, 'GET', '--pretty', "jobs/$jobid/details"); };
 die "openqa-cli call failed with retval=[$retval] and err=[$stderr]\n" if ($retval || $stderr);
 my $job = decode_json $stdout;
 check_if_excluded($job->{job}->{settings}) if $ENV{exclude};
 my $config = Config::Tiny->read($ENV{config}, 'utf8') if $ENV{config};
 foreach my $t (@{$job->{job}->{testresults}}) {
-    $api->run('--host', $host, '-X', 'POST', "jobs/$jobid/restart") if (($t->{result} =~ /^(canceled|incomplete|failed)$/) && is_retriggerable($t, $config));
+    $api->run(@api_common, 'POST', "jobs/$jobid/restart") if (($t->{result} =~ /^(canceled|incomplete|failed)$/) && is_retriggerable($t, $config));
 }
 

@@ -7,9 +7,21 @@ pvm_hmc-blocked-jobs.pl [OPTIONS]
 Search for jobs on local pvm_hmc workers that have no activity for the past TIME
 seconds, and cancel and restart them.
 
+=head1 INSTALLATION
+
+Clone this repository and copy the script to the same directory where C<openqa-cli> is located.
+
+Since recent versions of C<openQA-client> (at least on C<openQA-client-5.1758036156> and newer),
+script has to be located in the same directory where C<openqa-cli> is located, usually
+C</usr/share/openqa/script>; otherwise it will fail to locate some of the C<openQA-cient> assets
+which are usually installed under C</usr/share/openqa>.
+
+If unsure where C<openqa-cli> is installed, this can be seen on the C<openQA-client> package information with
+C<rpm -q -l openQA-client> or C<dpkg -L openqa-client> or with the command C<realpath $(which openqa-cli)>.
+
 =head1 OPTIONS
 
-=over 4
+=over
 
 =item B<--host> HOST
 
@@ -91,7 +103,7 @@ use Time::ParseDate;
 use JSON;
 use Config::Tiny;
 use Mojo::File qw(path);
-use OpenQA::CLI::api;
+use OpenQA::CLI;
 use Getopt::Long;
 Getopt::Long::Configure("no_ignore_case");
 
@@ -100,7 +112,7 @@ $workers_basepath //= '/var/lib/openqa/pool';
 $openqaconfig     //= '/etc/openqa/workers.ini';
 $clientconfig     //= '/etc/openqa/client.conf';
 my $timetowait = 900;
-my $api        = OpenQA::CLI::api->new() or die "Cannot instance OpenQA::CLI::api\n";
+my $api        = OpenQA::CLI->new() or die "Cannot instance OpenQA::CLI\n";
 use constant logfile => 'autoinst-log.txt';
 
 # Subs
@@ -137,7 +149,7 @@ sub restart_job {
     return if ($jobid < 0);
     return unless $host;
     log_msg "Restarting job with id [$jobid]";
-    $api->run('--host', $host, '-X', 'POST', "jobs/$jobid/restart")
+    $api->run('api', '--host', $host, '-X', 'POST', "jobs/$jobid/restart")
 }
 
 sub usage {

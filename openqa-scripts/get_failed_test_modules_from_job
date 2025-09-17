@@ -23,7 +23,7 @@ C<-S> will print a summary at the end (only useful with C<-f>).
 
 C<-v> will print debug information.
 
-The script requires C<OpenQA::CLI::api> to be installed and in C</usr/share/openqa/lib>, and
+The script requires C<OpenQA::CLI> to be installed and in C</usr/share/openqa/lib>, and
 C<Mojo::File>.
 
 =cut
@@ -35,7 +35,7 @@ BEGIN {
     unshift @INC, '/usr/share/openqa/lib';
 }
 
-use OpenQA::CLI::api;
+use OpenQA::CLI;
 use Capture::Tiny qw(capture);
 use Getopt::Std;
 use Mojo::File qw(path);
@@ -52,8 +52,8 @@ sub usage {
 sub print_failed_module {
     my $api   = shift;
     my $jobid = shift;
-    die "\$api is not of class OpenQA::CLI::api" unless (ref $api eq 'OpenQA::CLI::api');
-    my ($stdout, $stderr, $retval) = capture { $api->run('--host', $opt_s, '-X', 'GET', '--pretty', "jobs/$jobid/details"); };
+    die "\$api is not of class OpenQA::CLI" unless (ref $api eq 'OpenQA::CLI');
+    my ($stdout, $stderr, $retval) = capture { $api->run('api', '--host', $opt_s, '-X', 'GET', '--pretty', "jobs/$jobid/details"); };
     die "openqa-cli call failed with retval=[$retval] and err=[$stderr]\n" if ($retval || $stderr);
     my $job = decode_json($stdout);
     my %res = ();
@@ -80,7 +80,7 @@ usage unless ($opt_j || $opt_f);
 usage if ($opt_j && $opt_f);
 $opt_s //= 'openqa.suse.de';
 
-my $api = OpenQA::CLI::api->new() or die "Cannot instance OpenQA::CLI::api\n";
+my $api = OpenQA::CLI->new() or die "Cannot instance OpenQA::CLI\n";
 
 if ($opt_f) {
     print "host: [$opt_s], job_id_file: [$opt_f]\n" if $opt_v;

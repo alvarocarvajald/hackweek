@@ -5,9 +5,10 @@ automatic restart of jobs that fail on known issues.
 
 Use requires 2 files:
 
-* `retrigger-jobs-known-failures.pl`: the perl script itself. It should be installed in a directory readable
-by the openQA users `geekotest` and `_openqa-worker` and it should be executable.
-* `retrigger-jobs-known-failures.ini`: the configuration file. It should be readable by the openQA users.
+* `retrigger-jobs-known-failures.pl`: the perl script itself. It should be installed in the same directory
+where `openqa-cli` is installed, usually in `/usr/share/openqa/script`. It should be executable.
+* `retrigger-jobs-known-failures.ini`: the configuration file. It should be readable by the openQA users
+`geekotest` and `_openqa-worker`.
 
 If installed in the openQA instance itself (where webUI and scheduler are located) all script dependencies
 should already present. Otherwise, make sure script is installed in a system with openQA-client.
@@ -27,7 +28,7 @@ Below is an example of how it would look:
 # a job is done. Any executable specified in the variable as absolute path or
 # executable name in `$PATH` is called with the job ID as first and only
 # parameter corresponding to the `$result`, for example
-job_done_hook_failed = env host=openqa.opensuse.org config=/usr/local/share/retrigger-jobs-known-failures.ini /usr/local/bin/retrigger-jobs-known-failures.pl
+job_done_hook_failed = env host=openqa.opensuse.org config=/usr/local/share/retrigger-jobs-known-failures.ini /usr/share/openqa/script/retrigger-jobs-known-failures.pl
 ```
 For more information, run `perldoc -U retrigger-jobs-known-failures.pl`.
 
